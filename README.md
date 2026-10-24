@@ -7,7 +7,44 @@ A multi-agent system built on **LangGraph** that detects phishing emails and exp
 - The LLM agents are a social-engineering linguist, a RAG threat-intelligence agent grounded in MITRE ATT&CK, and a Judge ↔ red-team Critic debate.
 - An explainer and a responder produce a plain-English explanation, IOCs and a response playbook.
 
+[![tests](https://github.com/Suhas29wasnotavailable/PhishSentinel-agentic-phishing-detection/actions/workflows/tests.yml/badge.svg)](https://github.com/Suhas29wasnotavailable/PhishSentinel-agentic-phishing-detection/actions/workflows/tests.yml)
+
 📓 **Everything is in [`PhishSentinel_Agentic_Phishing_Detection.ipynb`](PhishSentinel_Agentic_Phishing_Detection.ipynb)**, executed with all outputs saved.
+
+## Architecture
+```mermaid
+flowchart TD
+    A[Email / raw MIME] --> P[Parser agent]
+    P --> H[Header forensics] & U[URL intelligence] & C[Content & obfuscation] & M[ML classifier] & Mem[Analyst memory]
+    H & U & C & M & Mem --> R{Router: learned evidence fusion}
+    R -- confident --> F[Finalize]
+    R -- ambiguous --> L[Social-engineering linguist] & T[Threat-intel RAG]
+    L & T --> J[Judge]
+    J --> Cr{Red-team critic}
+    Cr -- challenges --> J
+    Cr -- agrees --> F
+    F --> E[Explainer] & Rs[Response playbook + IOCs]
+```
+
+## Repository layout
+| Path | Contents |
+|---|---|
+| `PhishSentinel_Agentic_Phishing_Detection.ipynb` | The full system: dataset, ML, RAG, LLM agents, LangGraph workflow, evaluation |
+| `phishsentinel/` | Importable deterministic core: parser, Unicode normalisation, forensic signals, CLI |
+| `tests/` | Unit tests for the core (run in GitHub Actions) |
+| `docs/figures/` | Evaluation figures exported from the notebook |
+
+## Command-line evidence ledger
+The deterministic core has no dependencies:
+```bash
+pip install .
+phishsentinel suspicious_email.eml          # or: cat email.txt | phishsentinel --json
+```
+```
+Rule-engine risk: 0.83  (log-odds +2.6)  ·  headers: no  ·  URLs: 1
+  [+2.0] URL      raw_ip_link                      http://192.0.2.10/page
+  [+0.6] Content  call_to_action                   “click here”
+```
 
 ## Highlights
 - **Adaptive compute routing:** 96.9% of emails are settled without any LLM call, and only 3.1% reach the multi-agent debate.
