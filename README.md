@@ -28,6 +28,18 @@ A multi-agent system built on **LangGraph** that detects phishing emails and exp
 
 The LLM run used Meta Llama-3 8B locally through Ollama: 546 calls, 0 failures, 21 s median deep-path latency.
 
+| Confusion matrices | ROC curves |
+|---|---|
+| ![Confusion matrices](docs/figures/confusion_matrices.png) | ![ROC curves](docs/figures/roc_curves.png) |
+
+| Evasion-attack robustness | How the Judge ↔ Critic debate moved hard cases |
+|---|---|
+| ![Robustness](docs/figures/robustness.png) | ![Routing and debate](docs/figures/routing_and_debate.png) |
+
+**Agent timeline for one deep-path email.** The tool agents run in parallel, then the LLM agents run, with a debate round:
+
+![Agent timeline](docs/figures/agent_timeline.png)
+
 ## Run it
 **Google Colab:** open the notebook, add `GROQ_API_KEY` (free), `GEMINI_API_KEY` or `OPENAI_API_KEY` under 🔑 Secrets, then run all cells.
 
