@@ -1,9 +1,10 @@
-langgraph
-openai
-faiss-cpu
-sentence-transformers
-scikit-learn
-pandas
-numpy
-matplotlib
+# Versions used to produce the executed notebook
+langgraph==1.2.17
+openai==3.37.0
+faiss-cpu==1.15.1
+sentence-transformers==6.2.0
+scikit-learn==1.9.1
+pandas==3.1.0
+numpy==2.5.4
+matplotlib==3.11.2
 jupyter
