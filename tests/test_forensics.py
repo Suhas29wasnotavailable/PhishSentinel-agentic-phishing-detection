@@ -52,3 +52,19 @@ def test_content_signals_carry_highlight_spans():
 def test_sigmoid_is_a_probability():
     assert sigmoid(0) == 0.5
     assert 0 < sigmoid(-20) < sigmoid(20) < 1
+
+
+def html_email(anchor):
+    return ("From: Example Sender <news@example.com>\nTo: user@example.org\nSubject: Notice\n"
+            f"Content-Type: text/html; charset=utf-8\n\n<p>Sign in at {anchor}</p>")
+
+
+def test_link_text_showing_another_domain_is_flagged():
+    found = names(html_email('<a href="http://example-login.xyz/a">www.paypal.com</a>'))
+    assert "link_text_mismatch" in found
+
+
+def test_link_text_matching_its_target_is_not_flagged():
+    found = names(html_email('<a href="https://www.paypal.com/signin">paypal.com</a>'))
+    assert "link_text_mismatch" not in found
+    assert "link_text_mismatch" not in names(html_email('<a href="http://example.org/x">here</a>'))
