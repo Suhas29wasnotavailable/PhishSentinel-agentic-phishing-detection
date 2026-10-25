@@ -68,3 +68,15 @@ def test_link_text_matching_its_target_is_not_flagged():
     found = names(html_email('<a href="https://www.paypal.com/signin">paypal.com</a>'))
     assert "link_text_mismatch" not in found
     assert "link_text_mismatch" not in names(html_email('<a href="http://example.org/x">here</a>'))
+
+
+def sender(addr):
+    return f"From: Support <{addr}>\nTo: user@example.org\nSubject: Hello\n\nHello."
+
+
+def test_lookalike_sender_domain_is_flagged():
+    assert "sender_domain_typosquat" in names(sender("help@paypa1.com"))
+
+
+def test_genuine_sender_domain_is_not_flagged():
+    assert not any(n.startswith("sender_domain_") for n in names(sender("help@paypal.com")))
