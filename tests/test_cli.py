@@ -32,3 +32,10 @@ def test_no_signals_message(tmp_path, capsys):
     f = tmp_path / "plain.txt"
     f.write_text("lunch at noon?")
     assert "no deterministic signals" in run(capsys, [str(f)])[1]
+
+
+def test_fail_above_sets_exit_code(tmp_path, capsys):
+    f = tmp_path / "mail.txt"
+    f.write_text("Please click here: http://192.0.2.10/page")
+    assert run(capsys, [str(f), "--fail-above", "0.5"])[0] == 2
+    assert run(capsys, [str(f), "--fail-above", "0.99"])[0] == 0
