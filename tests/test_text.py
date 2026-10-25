@@ -41,3 +41,18 @@ def test_raw_email_headers_are_parsed():
     h = parse_input(raw)["headers"]
     assert h["from_addr"] == "news@example.com"
     assert (h["spf"], h["dkim"], h["dmarc"]) == ("pass", "pass", "pass")
+
+
+HTML_EMAIL = ("From: Example Sender <news@example.com>\nTo: user@example.org\nSubject: Notice\n"
+              "Content-Type: text/html; charset=utf-8\n\n"
+              '<html><style>p {color: red}</style><p>Read the <a href="http://192.0.2.10/doc">notice</a> &amp; reply.</p></html>')
+
+
+def test_html_href_targets_are_kept():
+    parsed = parse_input(HTML_EMAIL)
+    assert [u["url"] for u in parsed["urls"]] == ["http://192.0.2.10/doc"]
+    assert "notice" in parsed["norm"] and "& reply" in parsed["norm"]
+
+
+def test_html_style_blocks_are_dropped():
+    assert "color" not in parse_input(HTML_EMAIL)["norm"]

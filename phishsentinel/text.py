@@ -4,6 +4,7 @@ import re
 import unicodedata
 from email import message_from_string, policy
 from email.utils import parseaddr
+from html import unescape
 from urllib.parse import urlparse
 
 
@@ -58,6 +59,15 @@ def extract_urls(norm_text):
                           "scheme": urlparse(full).scheme if url.lower().startswith("http") else "", "span": (m.start(), m.end())})
     return found
 
+ANCHOR_RE = re.compile(r"(?is)<a\b[^>]*?\bhref\s*=\s*[\"']?([^\"'\s>]+)[^>]*>(.*?)</a\s*>")
+
+def html_to_text(markup):
+    """Strip tags but keep each link's href next to its text, so the URL agent still sees link targets."""
+    s = re.sub(r"(?is)<(script|style)\b.*?</\1\s*>", " ", markup)
+    s = ANCHOR_RE.sub(lambda m: f" {m.group(2)} [{m.group(1)}] ", s)
+    s = re.sub(r"<[^>]+>", " ", s)
+    return re.sub(r"[ \t]+", " ", unescape(s))
+
 def looks_like_raw_email(s):
     head = s[:3000]
     return bool(re.search(r"(?im)^from:\s.+$", head) and re.search(r"(?im)^(subject|to|received|message-id):\s", head))
@@ -84,7 +94,7 @@ def parse_input(raw):
             elif part.get_content_type() == "text/plain":
                 texts.append(part.get_content())
             elif part.get_content_type() == "text/html":
-                htmls.append(re.sub(r"<[^>]+>", " ", part.get_content()))
+                htmls.append(html_to_text(part.get_content()))
         body = "\n".join(texts) or "\n".join(htmls)
         if headers["subject"]:
             body = headers["subject"] + "\n\n" + body
