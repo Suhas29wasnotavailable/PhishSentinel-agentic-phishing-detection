@@ -80,3 +80,34 @@ def test_lookalike_sender_domain_is_flagged():
 
 def test_genuine_sender_domain_is_not_flagged():
     assert not any(n.startswith("sender_domain_") for n in names(sender("help@paypal.com")))
+
+
+def test_url_trick_signals():
+    found = names("a http://xn--pypal-4ve.com/x b https://bit.ly/abc c http://user@example.org/login")
+    assert {"punycode_domain", "url_shortener", "at_symbol_in_url"} <= found
+
+
+def test_oauth_consent_link_to_unknown_app_is_flagged():
+    link = "https://login.microsoftonline.com/common/oauth2/authorize?scope=Mail.Read&redirect_uri=https://example-app.xyz/cb"
+    assert "oauth_consent_abuse" in names(link)
+
+
+def test_many_links_signal():
+    assert "many_links" in names(" ".join(f"https://site{i}.example.org" for i in range(6)))
+
+
+def test_executive_title_on_free_mail():
+    raw = "From: CFO Office <cfo.office@gmail.com>\nTo: user@example.org\nSubject: Quick task\n\nAre you at your desk?"
+    assert "executive_on_freemail" in names(raw)
+
+
+def test_risky_attachments_are_flagged():
+    raw = ("From: Example Sender <news@example.com>\nTo: user@example.org\nSubject: Files\n"
+           "MIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=XX\n\n"
+           "--XX\nContent-Type: text/plain\n\nSee attached.\n"
+           "--XX\nContent-Type: application/octet-stream\nContent-Disposition: attachment; filename=\"invoice.pdf.exe\"\n\nAAAA\n"
+           "--XX\nContent-Type: application/octet-stream\nContent-Disposition: attachment; filename=\"report.docm\"\n\nAAAA\n"
+           "--XX--\n")
+    e, signals = analyze_signals(raw)
+    assert [a["filename"] for a in e["attachments"]] == ["invoice.pdf.exe", "report.docm"]
+    assert {"executable_attachment", "double_extension", "risky_container"} <= {s["name"] for s in signals}
