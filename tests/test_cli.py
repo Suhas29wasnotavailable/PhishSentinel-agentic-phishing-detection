@@ -39,3 +39,17 @@ def test_fail_above_sets_exit_code(tmp_path, capsys):
     f.write_text("Please click here: http://192.0.2.10/page")
     assert run(capsys, [str(f), "--fail-above", "0.5"])[0] == 2
     assert run(capsys, [str(f), "--fail-above", "0.99"])[0] == 0
+
+
+def test_several_files_give_a_ranked_summary(tmp_path, capsys):
+    risky, plain = tmp_path / "risky.txt", tmp_path / "plain.txt"
+    risky.write_text("Please click here: http://192.0.2.10/page")
+    plain.write_text("lunch at noon?")
+    code, out = run(capsys, [str(plain), str(risky)])
+    first, second = out.splitlines()
+    assert code == 0
+    assert first.endswith("risky.txt") and "raw_ip_link" in first
+    assert second.endswith("plain.txt")
+    code, out = run(capsys, [str(plain), str(risky), "--json", "--fail-above", "0.5"])
+    assert code == 2
+    assert [json.loads(line)["file"] for line in out.splitlines()] == [str(risky), str(plain)]
