@@ -66,6 +66,9 @@ def header_forensics(e):
         out.append(sig("H-reply", "Header", "reply_to_mismatch", 1.4, f"Reply-To {h['reply_to']} ≠ From domain {fdom}", "T1656"))
     if h["return_path"] and registered_domain(h["return_path"].split("@")[-1]) != registered_domain(fdom):
         out.append(sig("H-rpath", "Header", "return_path_mismatch", 0.5, f"Return-Path {h['return_path']}"))
+    la = brand_lookalike(fdom)
+    if la:
+        out.append(sig("H-look", "Header", f"sender_domain_{la[1]}", 2.2, f"sender domain {fdom} imitates {la[0]}", "T1583.001"))
     disp = skeleton(h["from_name"].replace(" ", ""))
     for brand, doms in BRANDS.items():
         if brand in disp and registered_domain(fdom) not in doms:
