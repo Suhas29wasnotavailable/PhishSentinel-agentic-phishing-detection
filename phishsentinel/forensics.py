@@ -105,6 +105,12 @@ def url_intel(e):
             redir = registered_domain(urlparse(q["redirect_uri"][0]).hostname or "")
             if redir not in LEGIT_DOMAINS:
                 out.append(sig("U-oauth", "URL", "oauth_consent_abuse", 2.5, f"OAuth grant ({q['scope'][0][:60]}) redirecting to {redir}", "T1528", sp, "url"))
+    for a in e.get("anchors", []):
+        shown = re.search(r"(?i)\b(?:https?://)?((?:[a-z0-9-]+\.)+[a-z]{2,})\b", a["text"])
+        target = urlparse(a["href"] if "//" in a["href"] else "http://" + a["href"]).hostname or ""
+        if shown and target and registered_domain(shown.group(1)) != registered_domain(target):
+            out.append(sig("U-mask", "URL", "link_text_mismatch", 2.0,
+                           f"link text shows {shown.group(1)} but points to {target}", "T1566.002", [], "url"))
     if len(urls) >= 6:
         out.append(sig("U-many", "URL", "many_links", 0.3, f"{len(urls)} links in message", None))
     if urls and all(u["domain"] in LEGIT_DOMAINS for u in urls):

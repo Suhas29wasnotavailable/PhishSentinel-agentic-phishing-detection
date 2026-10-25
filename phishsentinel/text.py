@@ -61,10 +61,15 @@ def extract_urls(norm_text):
 
 ANCHOR_RE = re.compile(r"(?is)<a\b[^>]*?\bhref\s*=\s*[\"']?([^\"'\s>]+)[^>]*>(.*?)</a\s*>")
 
-def html_to_text(markup):
-    """Strip tags but keep each link's href next to its text, so the URL agent still sees link targets."""
+def html_to_text(markup, anchors=None):
+    """Strip tags but keep each link's href next to its text, so the URL agent still sees link targets.
+    If a list is given as anchors, append {"text", "href"} for every link."""
+    def keep(m):
+        if anchors is not None:
+            anchors.append({"text": unescape(re.sub(r"<[^>]+>", " ", m.group(2))).strip(), "href": unescape(m.group(1))})
+        return f" {m.group(2)} [{m.group(1)}] "
     s = re.sub(r"(?is)<(script|style)\b.*?</\1\s*>", " ", markup)
-    s = ANCHOR_RE.sub(lambda m: f" {m.group(2)} [{m.group(1)}] ", s)
+    s = ANCHOR_RE.sub(keep, s)
     s = re.sub(r"<[^>]+>", " ", s)
     return re.sub(r"[ \t]+", " ", unescape(s))
 
@@ -73,7 +78,7 @@ def looks_like_raw_email(s):
     return bool(re.search(r"(?im)^from:\s.+$", head) and re.search(r"(?im)^(subject|to|received|message-id):\s", head))
 
 def parse_input(raw):
-    headers, attachments, body = None, [], raw
+    headers, attachments, anchors, body = None, [], [], raw
     if looks_like_raw_email(raw):
         msg = message_from_string(raw, policy=policy.default)
         from_name, from_addr = parseaddr(str(msg.get("From", "")))
@@ -94,10 +99,10 @@ def parse_input(raw):
             elif part.get_content_type() == "text/plain":
                 texts.append(part.get_content())
             elif part.get_content_type() == "text/html":
-                htmls.append(html_to_text(part.get_content()))
+                htmls.append(html_to_text(part.get_content(), anchors))
         body = "\n".join(texts) or "\n".join(htmls)
         if headers["subject"]:
             body = headers["subject"] + "\n\n" + body
     norm, idx, obf = normalize_with_map(body)
     return {"body": body, "norm": norm, "idx": idx, "obfuscation": obf, "headers": headers,
-            "attachments": attachments, "urls": extract_urls(norm)}
+            "attachments": attachments, "anchors": anchors, "urls": extract_urls(norm)}
