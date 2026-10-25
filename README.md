@@ -39,12 +39,16 @@ The deterministic core has no dependencies:
 ```bash
 pip install .
 phishsentinel suspicious_email.eml          # or: cat email.txt | phishsentinel --json
+phishsentinel inbox/*.eml                   # riskiest-first summary, one line per email
+phishsentinel mail.eml --fail-above 0.8     # exit code 2 at or above the risk threshold
 ```
 ```
 Rule-engine risk: 0.83  (log-odds +2.6)  ·  headers: no  ·  URLs: 1
   [+2.0] URL      raw_ip_link                      http://192.0.2.10/page
   [+0.6] Content  call_to_action                   “click here”
 ```
+
+Signals from the deterministic core include SPF/DKIM/DMARC failures, Reply-To and Return-Path mismatches, display-name and sender-domain brand look-alikes, risky attachments, raw-IP, punycode, shortener and OAuth-consent links, HTML links whose visible text shows a different domain, social-engineering phrases and Unicode obfuscation. Each one is mapped to a MITRE ATT&CK technique.
 
 ## Highlights
 - **Adaptive compute routing:** 96.9% of emails are settled without any LLM call, and only 3.1% reach the multi-agent debate.
