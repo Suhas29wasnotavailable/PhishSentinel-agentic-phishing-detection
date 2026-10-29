@@ -61,3 +61,8 @@ def test_html_style_blocks_are_dropped():
 def test_more_country_suffixes_are_recognised():
     assert registered_domain("secure.example.co.za") == "example.co.za"
     assert registered_domain("portal.example.ac.in") == "example.ac.in"
+
+
+def test_ip_hosts_are_kept_whole():
+    assert registered_domain("192.0.2.10") == "192.0.2.10"
+    assert extract_urls("http://192.0.2.10/x")[0]["domain"] == "192.0.2.10"

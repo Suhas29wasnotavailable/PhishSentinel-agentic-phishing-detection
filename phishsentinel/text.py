@@ -41,7 +41,10 @@ MULTI_TLDS = {  # common two-label public suffixes (a small subset of the Public
 }
 
 def registered_domain(host):
-    parts = (host or "").lower().strip(".").split(".")
+    host = (host or "").lower().strip(".")
+    if re.fullmatch(r"\d{1,3}(\.\d{1,3}){3}", host):
+        return host
+    parts = host.split(".")
     if len(parts) >= 3 and ".".join(parts[-2:]) in MULTI_TLDS:
         return ".".join(parts[-3:])
     return ".".join(parts[-2:])
