@@ -61,3 +61,10 @@ def test_iocs_flag_prints_defanged_indicators(tmp_path, capsys):
     out = run(capsys, [str(f), "--iocs"])[1]
     assert "urls         hxxp://192[.]0[.]2[.]10/page" in out
     assert json.loads(run(capsys, [str(f), "--iocs", "--json"])[1])["ips"] == ["192[.]0[.]2[.]10"]
+
+
+def test_ledger_names_the_mitre_techniques(tmp_path, capsys):
+    f = tmp_path / "mail.txt"
+    f.write_text("Please click here: http://192.0.2.10/page")
+    out = run(capsys, [str(f)])[1]
+    assert "T1566.002 Phishing: Spearphishing Link" in out.splitlines()[-1]
