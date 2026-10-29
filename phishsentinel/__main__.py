@@ -5,6 +5,7 @@ import sys
 
 from .forensics import analyze_signals, rule_logodds, sigmoid
 from .iocs import extract_iocs
+from .mitre import technique_name
 
 
 def report(raw):
@@ -15,7 +16,8 @@ def report(raw):
 
 def as_json(email, signals, lo, risk, **extra):
     return {**extra, "rule_logodds": lo, "rule_risk": risk, "urls": [u["url"] for u in email["urls"]],
-            "signals": [{k: s[k] for k in ("agent", "name", "weight", "evidence", "mitre")} for s in signals]}
+            "signals": [{**{k: s[k] for k in ("agent", "name", "weight", "evidence", "mitre")},
+                         "technique": technique_name(s["mitre"] or "")} for s in signals]}
 
 
 def batch(paths, args):
@@ -67,6 +69,9 @@ def main(argv=None):
         print(f"  [{s['weight']:+.1f}] {s['agent']:<8} {s['name']:<32} {s['evidence'][:70]}")
     if not signals:
         print("  no deterministic signals")
+    techniques = sorted({s["mitre"] for s in signals if s["mitre"]})
+    if techniques:
+        print("MITRE ATT&CK: " + "; ".join(f"{t} {technique_name(t)}" for t in techniques))
     return 2 if flagged else 0
 
 
