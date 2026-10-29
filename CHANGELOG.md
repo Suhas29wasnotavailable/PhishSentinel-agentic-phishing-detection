@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 – 2026-10-30
+### Added
+- `--iocs`: defanged indicators of compromise (URLs, domains, IPs, sender addresses, attachment SHA-256), also as JSON.
+- `embedded_password_form` / `embedded_form` signals for HTML forms placed inside the email.
+- MITRE ATT&CK technique names in the ledger and JSON output (`phishsentinel.mitre`).
+- Punycode hosts are decoded before the brand look-alike check, so IDN homoglyph domains match their brand.
+- More two-label country suffixes (`co.za`, `ac.in`, `com.sg`, …).
+
+### Fixed
+- Reply-To on a subdomain of the sender's domain no longer counts as a mismatch.
+- IP-address hosts were reduced to their last two octets as a "domain".
+
 ## 0.2.0 – 2026-10-25
 ### Added
 - `link_text_mismatch` signal: HTML links whose visible text shows a different domain from the real target.
