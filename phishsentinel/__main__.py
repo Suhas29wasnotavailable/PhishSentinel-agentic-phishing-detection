@@ -1,6 +1,7 @@
 """Command-line evidence ledger: python -m phishsentinel FILE [FILE ...] (or pipe text on stdin)."""
 import argparse
 import json
+import os
 import sys
 
 from .forensics import analyze_signals, rule_logodds, sigmoid
@@ -38,7 +39,8 @@ def batch(paths, args):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="phishsentinel", description="Deterministic phishing evidence ledger for emails.")
+    ap = argparse.ArgumentParser(prog="phishsentinel", description="Deterministic phishing evidence ledger for emails.",
+                                 epilog="exit codes: 0 ok, 2 risk at or above --fail-above (or bad arguments), 3 file not found")
     ap.add_argument("files", nargs="*", metavar="FILE",
                     help="email file(s), plain text or raw MIME; reads stdin if omitted. Several files give a ranked summary")
     ap.add_argument("--json", action="store_true", help="print signals as JSON (JSON lines for several files)")
@@ -46,6 +48,10 @@ def main(argv=None):
                     help="exit with code 2 if the rule-engine risk is at or above RISK (0-1), for mail-filter hooks")
     ap.add_argument("--iocs", action="store_true", help="print defanged indicators (URLs, domains, IPs, senders, attachment hashes) instead")
     args = ap.parse_args(argv)
+    missing = [f for f in args.files if not os.path.isfile(f)]
+    if missing:
+        print(f"{ap.prog}: no such file: {', '.join(missing)}", file=sys.stderr)
+        return 3
 
     if len(args.files) > 1:
         return batch(args.files, args)

@@ -68,3 +68,8 @@ def test_ledger_names_the_mitre_techniques(tmp_path, capsys):
     f.write_text("Please click here: http://192.0.2.10/page")
     out = run(capsys, [str(f)])[1]
     assert "T1566.002 Phishing: Spearphishing Link" in out.splitlines()[-1]
+
+
+def test_missing_file_has_its_own_exit_code(tmp_path, capsys):
+    assert main([str(tmp_path / "missing.eml"), "--fail-above", "0.5"]) == 3
+    assert "no such file" in capsys.readouterr().err
