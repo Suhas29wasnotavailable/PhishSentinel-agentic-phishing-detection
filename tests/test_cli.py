@@ -53,3 +53,11 @@ def test_several_files_give_a_ranked_summary(tmp_path, capsys):
     code, out = run(capsys, [str(plain), str(risky), "--json", "--fail-above", "0.5"])
     assert code == 2
     assert [json.loads(line)["file"] for line in out.splitlines()] == [str(risky), str(plain)]
+
+
+def test_iocs_flag_prints_defanged_indicators(tmp_path, capsys):
+    f = tmp_path / "mail.txt"
+    f.write_text("Please click here: http://192.0.2.10/page")
+    out = run(capsys, [str(f), "--iocs"])[1]
+    assert "urls         hxxp://192[.]0[.]2[.]10/page" in out
+    assert json.loads(run(capsys, [str(f), "--iocs", "--json"])[1])["ips"] == ["192[.]0[.]2[.]10"]

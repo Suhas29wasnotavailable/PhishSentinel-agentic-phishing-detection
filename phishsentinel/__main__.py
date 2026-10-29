@@ -4,6 +4,7 @@ import json
 import sys
 
 from .forensics import analyze_signals, rule_logodds, sigmoid
+from .iocs import extract_iocs
 
 
 def report(raw):
@@ -41,6 +42,7 @@ def main(argv=None):
     ap.add_argument("--json", action="store_true", help="print signals as JSON (JSON lines for several files)")
     ap.add_argument("--fail-above", type=float, metavar="RISK",
                     help="exit with code 2 if the rule-engine risk is at or above RISK (0-1), for mail-filter hooks")
+    ap.add_argument("--iocs", action="store_true", help="print defanged indicators (URLs, domains, IPs, senders, attachment hashes) instead")
     args = ap.parse_args(argv)
 
     if len(args.files) > 1:
@@ -49,6 +51,14 @@ def main(argv=None):
     email, signals, lo, risk = report(raw)
     flagged = args.fail_above is not None and risk >= args.fail_above
 
+    if args.iocs:
+        iocs = extract_iocs(email)
+        if args.json:
+            print(json.dumps(iocs, indent=2))
+        for kind, values in ([] if args.json else iocs.items()):
+            for v in values:
+                print(f"{kind:<12} {v['sha256'] + '  ' + v['filename'] if kind == 'attachments' else v}")
+        return 2 if flagged else 0
     if args.json:
         print(json.dumps(as_json(email, signals, lo, risk), indent=2))
         return 2 if flagged else 0
