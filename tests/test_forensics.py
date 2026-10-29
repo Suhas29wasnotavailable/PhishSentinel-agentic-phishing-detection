@@ -117,3 +117,7 @@ def test_reply_to_on_a_subdomain_of_the_sender_is_not_a_mismatch():
     raw = ("From: Example Support <help@example.com>\nTo: user@example.org\nSubject: Hello\n"
            "Reply-To: tickets@support.example.com\n\nHello.")
     assert "reply_to_mismatch" not in names(raw)
+
+
+def test_lookalike_under_a_country_suffix():
+    assert brand_lookalike("paypa1.com.sg") == ("paypal", "typosquat")

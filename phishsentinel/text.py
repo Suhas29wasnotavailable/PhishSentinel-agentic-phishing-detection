@@ -35,7 +35,10 @@ def normalize(s):
 
 URL_RE = re.compile(r"(?i)\b(?:https?://|www\.)[^\s<>\"')\]]+")
 SPACED_URL_RE = re.compile(r"(?i)\b(?:https?\s*:\s*/\s*/\s*|www\s*\.\s*)[a-z0-9-]+(?:\s*\.\s*[a-z0-9-]+)+(?:\s*/\s*[\w\-.?=&%~]+)*")
-MULTI_TLDS = {"co.uk", "co.in", "com.au", "net.in", "org.in", "co.jp", "com.br"}
+MULTI_TLDS = {  # common two-label public suffixes (a small subset of the Public Suffix List)
+    "co.uk", "org.uk", "ac.uk", "gov.uk", "co.in", "net.in", "org.in", "ac.in", "gov.in", "edu.in", "com.au", "net.au",
+    "org.au", "co.jp", "ne.jp", "com.br", "com.cn", "com.sg", "com.my", "com.mx", "com.tr", "co.za", "co.nz", "co.kr",
+}
 
 def registered_domain(host):
     parts = (host or "").lower().strip(".").split(".")
