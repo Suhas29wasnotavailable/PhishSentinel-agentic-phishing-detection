@@ -56,3 +56,8 @@ def test_html_href_targets_are_kept():
 
 def test_html_style_blocks_are_dropped():
     assert "color" not in parse_input(HTML_EMAIL)["norm"]
+
+
+def test_more_country_suffixes_are_recognised():
+    assert registered_domain("secure.example.co.za") == "example.co.za"
+    assert registered_domain("portal.example.ac.in") == "example.ac.in"
