@@ -76,12 +76,20 @@ def html_to_text(markup, anchors=None):
     s = re.sub(r"<[^>]+>", " ", s)
     return re.sub(r"[ \t]+", " ", unescape(s))
 
+FORM_RE = re.compile(r"(?is)<form\b([^>]*)>(.*?)</form\s*>")
+
+def html_forms(markup):
+    """Forms embedded in an HTML body: their action URL and whether they ask for a password."""
+    return [{"action": (re.search(r"(?i)\baction\s*=\s*[\"']?([^\"'\s>]+)", m.group(1)) or [None, ""])[1],
+             "password": bool(re.search(r"(?i)<input\b[^>]*\btype\s*=\s*[\"']?password", m.group(2)))}
+            for m in FORM_RE.finditer(markup)]
+
 def looks_like_raw_email(s):
     head = s[:3000]
     return bool(re.search(r"(?im)^from:\s.+$", head) and re.search(r"(?im)^(subject|to|received|message-id):\s", head))
 
 def parse_input(raw):
-    headers, attachments, anchors, body = None, [], [], raw
+    headers, attachments, anchors, forms, body = None, [], [], [], raw
     if looks_like_raw_email(raw):
         msg = message_from_string(raw, policy=policy.default)
         from_name, from_addr = parseaddr(str(msg.get("From", "")))
@@ -102,10 +110,11 @@ def parse_input(raw):
             elif part.get_content_type() == "text/plain":
                 texts.append(part.get_content())
             elif part.get_content_type() == "text/html":
+                forms += html_forms(part.get_content())
                 htmls.append(html_to_text(part.get_content(), anchors))
         body = "\n".join(texts) or "\n".join(htmls)
         if headers["subject"]:
             body = headers["subject"] + "\n\n" + body
     norm, idx, obf = normalize_with_map(body)
     return {"body": body, "norm": norm, "idx": idx, "obfuscation": obf, "headers": headers,
-            "attachments": attachments, "anchors": anchors, "urls": extract_urls(norm)}
+            "attachments": attachments, "anchors": anchors, "forms": forms, "urls": extract_urls(norm)}

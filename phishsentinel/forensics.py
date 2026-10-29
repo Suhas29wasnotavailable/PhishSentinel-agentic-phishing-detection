@@ -84,6 +84,12 @@ def header_forensics(e):
             out.append(sig("A-dbl", "Header", "double_extension", 2.5, a["filename"], "T1036.007"))
         if parts[-1] in {"docm", "xlsm", "html", "htm", "iso", "img"}:
             out.append(sig("A-risky", "Header", "risky_container", 1.5, a["filename"], "T1566.001"))
+    for f in e.get("forms", []):
+        if f["password"]:
+            out.append(sig("A-form", "Header", "embedded_password_form", 3.0,
+                           f"HTML form asking for a password, submitting to {f['action'] or 'an unspecified target'}", "T1598.003"))
+        elif f["action"]:
+            out.append(sig("A-formx", "Header", "embedded_form", 1.0, f"HTML form submitting to {f['action']}", "T1598.003"))
     return out
 
 def url_intel(e):
