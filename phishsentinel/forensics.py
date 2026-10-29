@@ -62,7 +62,7 @@ def header_forensics(e):
                 out.append(sig(f"H-{k}", "Header", f"{k}_{h[k]}", w * (0.5 if h[k] in ("softfail", "none") else 1), f"{k.upper()}={h[k]}", "T1566"))
         if all(h[k] == "pass" for k in ("spf", "dkim", "dmarc")):
             out.append(sig("H-auth", "Header", "fully_authenticated", -0.8, f"SPF/DKIM/DMARC pass for {fdom}"))
-    if h["reply_to"] and h["reply_to"].split("@")[-1] != fdom:
+    if h["reply_to"] and registered_domain(h["reply_to"].split("@")[-1]) != registered_domain(fdom):
         out.append(sig("H-reply", "Header", "reply_to_mismatch", 1.4, f"Reply-To {h['reply_to']} ≠ From domain {fdom}", "T1656"))
     if h["return_path"] and registered_domain(h["return_path"].split("@")[-1]) != registered_domain(fdom):
         out.append(sig("H-rpath", "Header", "return_path_mismatch", 0.5, f"Return-Path {h['return_path']}"))
