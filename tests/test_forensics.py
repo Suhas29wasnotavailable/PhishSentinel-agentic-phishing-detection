@@ -111,3 +111,9 @@ def test_risky_attachments_are_flagged():
     e, signals = analyze_signals(raw)
     assert [a["filename"] for a in e["attachments"]] == ["invoice.pdf.exe", "report.docm"]
     assert {"executable_attachment", "double_extension", "risky_container"} <= {s["name"] for s in signals}
+
+
+def test_reply_to_on_a_subdomain_of_the_sender_is_not_a_mismatch():
+    raw = ("From: Example Support <help@example.com>\nTo: user@example.org\nSubject: Hello\n"
+           "Reply-To: tickets@support.example.com\n\nHello.")
+    assert "reply_to_mismatch" not in names(raw)
