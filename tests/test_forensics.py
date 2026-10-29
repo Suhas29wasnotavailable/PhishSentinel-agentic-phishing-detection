@@ -134,3 +134,9 @@ def test_form_asking_for_a_password_inside_the_email_is_flagged():
 def test_form_without_password_is_weaker_evidence():
     found = names(html_email('<form action="https://example.org/survey"><input name="q"></form>'))
     assert "embedded_form" in found and "embedded_password_form" not in found
+
+
+def test_punycode_homoglyph_domain_is_matched_to_the_brand():
+    assert brand_lookalike("xn--pypal-4ve.com") == ("paypal", "typosquat")
+    found = names("sign in at https://xn--pypal-4ve.com/login")
+    assert {"punycode_domain", "brand_lookalike_typosquat"} <= found
