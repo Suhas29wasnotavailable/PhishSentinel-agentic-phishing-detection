@@ -32,8 +32,19 @@ def skeleton(label):
         s = s.replace(a, b)
     return s
 
+def decode_idn(host):
+    """xn--pypal-4ve.com -> pаypal.com (Cyrillic а), so homoglyph skeletons can be compared."""
+    labels = []
+    for label in host.split("."):
+        try:
+            labels.append(label[4:].encode("ascii").decode("punycode") if label.startswith("xn--") else label)
+        except (UnicodeError, ValueError):
+            labels.append(label)
+    return ".".join(labels)
+
 def brand_lookalike(host):
     """Return (brand, kind) if host imitates a brand without belonging to it."""
+    host = decode_idn(host)
     dom = registered_domain(host)
     if dom in LEGIT_DOMAINS:
         return None
