@@ -121,3 +121,16 @@ def test_reply_to_on_a_subdomain_of_the_sender_is_not_a_mismatch():
 
 def test_lookalike_under_a_country_suffix():
     assert brand_lookalike("paypa1.com.sg") == ("paypal", "typosquat")
+
+
+def test_form_asking_for_a_password_inside_the_email_is_flagged():
+    form = ('<form action="http://example-login.xyz/post"><input name="u">'
+            '<input type="password" name="p"><button>Sign in</button></form>')
+    e, signals = analyze_signals(html_email(form))
+    assert e["forms"] == [{"action": "http://example-login.xyz/post", "password": True}]
+    assert "embedded_password_form" in {s["name"] for s in signals}
+
+
+def test_form_without_password_is_weaker_evidence():
+    found = names(html_email('<form action="https://example.org/survey"><input name="q"></form>'))
+    assert "embedded_form" in found and "embedded_password_form" not in found
