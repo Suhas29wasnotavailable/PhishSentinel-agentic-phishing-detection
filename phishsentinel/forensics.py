@@ -105,12 +105,13 @@ def header_forensics(e):
 
 def url_intel(e):
     out, urls = [], e["urls"]
+    known = LEGIT_DOMAINS | e.get("trusted", set())
     for u in urls:
         host, sp = u["host"], [u["span"]]
         if re.fullmatch(r"\d{1,3}(\.\d{1,3}){3}", host):
             out.append(sig("U-ip", "URL", "raw_ip_link", 2.0, u["url"], "T1566.002", sp, "url"))
         sub_labels = len(host.split(".")) - len(u["domain"].split("."))
-        if sub_labels >= 4 and u["domain"] not in LEGIT_DOMAINS:
+        if sub_labels >= 4 and u["domain"] not in known:
             out.append(sig("U-deep", "URL", "deep_subdomain", 0.6, f"{sub_labels} subdomain levels in {host}", "T1583.001", sp, "url"))
         if u["domain"] in SHORTENERS:
             out.append(sig("U-short", "URL", "url_shortener", 0.8, u["url"], "T1566.002", sp, "url"))
@@ -118,7 +119,7 @@ def url_intel(e):
             out.append(sig("U-tld", "URL", "risky_tld", 0.7, f".{host.split('.')[-1]} in {host}", "T1583.001", sp, "url"))
         if host.startswith("xn--") or ".xn--" in host:
             out.append(sig("U-puny", "URL", "punycode_domain", 2.5, host, "T1583.001", sp, "url"))
-        la = brand_lookalike(host)
+        la = brand_lookalike(host) if u["domain"] not in known else None
         if la:
             out.append(sig("U-look", "URL", f"brand_lookalike_{la[1]}", 2.2, f"{host} imitates {la[0]}", "T1583.001", sp, "url"))
         if "@" in u["url"].split("//")[-1].split("/")[0]:
@@ -133,7 +134,7 @@ def url_intel(e):
         q = parse_qs(parsed.query)
         if "redirect_uri" in q and "scope" in q:
             redir = registered_domain(urlparse(q["redirect_uri"][0]).hostname or "")
-            if redir not in LEGIT_DOMAINS:
+            if redir not in known:
                 out.append(sig("U-oauth", "URL", "oauth_consent_abuse", 2.5, f"OAuth grant ({q['scope'][0][:60]}) redirecting to {redir}", "T1528", sp, "url"))
     for a in e.get("anchors", []):
         shown = re.search(r"(?i)\b(?:https?://)?((?:[a-z0-9-]+\.)+[a-z]{2,})\b", a["text"])
@@ -143,7 +144,7 @@ def url_intel(e):
                            f"link text shows {shown.group(1)} but points to {target}", "T1566.002", [], "url"))
     if len(urls) >= 6:
         out.append(sig("U-many", "URL", "many_links", 0.3, f"{len(urls)} links in message", None))
-    if urls and all(u["domain"] in LEGIT_DOMAINS for u in urls):
+    if urls and all(u["domain"] in known for u in urls):
         out.append(sig("U-trust", "URL", "links_to_known_brands_only", -0.6, ", ".join(sorted({u['domain'] for u in urls}))))
     return out
 
@@ -184,8 +185,10 @@ def sigmoid(x):
     return 1 / (1 + math.exp(-x))
 
 
-def analyze_signals(raw):
-    """Run the parser and every tool agent; return (parsed_email, signals)."""
+def analyze_signals(raw, trusted=()):
+    """Run the parser and every tool agent; return (parsed_email, signals).
+    trusted: extra registered domains to treat like known brand domains (e.g. your organisation's own)."""
     from .text import parse_input
     e = parse_input(raw)
+    e["trusted"] = {registered_domain(d) for d in trusted}
     return e, header_forensics(e) + url_intel(e) + content_forensics(e)
