@@ -66,3 +66,9 @@ def test_more_country_suffixes_are_recognised():
 def test_ip_hosts_are_kept_whole():
     assert registered_domain("192.0.2.10") == "192.0.2.10"
     assert extract_urls("http://192.0.2.10/x")[0]["domain"] == "192.0.2.10"
+
+
+def test_sentence_punctuation_is_not_part_of_the_url():
+    urls = extract_urls("Go to https://example.org/reset! Or http://example.net/a? and https://example.com/b:")
+    assert [u["url"] for u in urls] == ["https://example.org/reset", "http://example.net/a", "https://example.com/b"]
+    assert extract_urls("https://example.org/search?q=1")[0]["url"] == "https://example.org/search?q=1"
