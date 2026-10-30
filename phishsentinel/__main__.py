@@ -9,8 +9,8 @@ from .iocs import extract_iocs
 from .mitre import technique_name
 
 
-def report(raw):
-    email, signals = analyze_signals(raw)
+def report(raw, trusted=()):
+    email, signals = analyze_signals(raw, trusted)
     lo = rule_logodds(signals)
     return email, signals, lo, sigmoid(lo - 1.0)
 
@@ -26,7 +26,7 @@ def batch(paths, args):
     rows = []
     for path in paths:
         with open(path, encoding="utf-8", errors="replace") as f:
-            rows.append((path, *report(f.read())))
+            rows.append((path, *report(f.read(), args.trust)))
     rows.sort(key=lambda r: -r[4])
     for path, email, signals, lo, risk in rows:
         if args.json:
@@ -47,6 +47,8 @@ def main(argv=None):
     ap.add_argument("--fail-above", type=float, metavar="RISK",
                     help="exit with code 2 if the rule-engine risk is at or above RISK (0-1), for mail-filter hooks")
     ap.add_argument("--iocs", action="store_true", help="print defanged indicators (URLs, domains, IPs, senders, attachment hashes) instead")
+    ap.add_argument("--trust", action="append", default=[], metavar="DOMAIN",
+                    help="treat DOMAIN (e.g. your organisation's) as a known-good link domain; repeatable")
     args = ap.parse_args(argv)
     missing = [f for f in args.files if not os.path.isfile(f)]
     if missing:
@@ -56,7 +58,7 @@ def main(argv=None):
     if len(args.files) > 1:
         return batch(args.files, args)
     raw = open(args.files[0], encoding="utf-8", errors="replace").read() if args.files else sys.stdin.read()
-    email, signals, lo, risk = report(raw)
+    email, signals, lo, risk = report(raw, args.trust)
     flagged = args.fail_above is not None and risk >= args.fail_above
 
     if args.iocs:

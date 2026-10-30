@@ -156,3 +156,15 @@ def test_deeply_nested_subdomain_is_flagged():
 def test_qr_code_instructions_are_flagged():
     assert "qr_code_lure" in names("To keep access, scan the QR code below with your phone.")
     assert "qr_code_lure" not in names("Our booth will have a QR code poster.")
+
+
+def test_trusted_domains_count_as_known():
+    text = "see https://intranet.example.org/hr"
+    assert "links_to_known_brands_only" not in {s["name"] for s in analyze_signals(text)[1]}
+    assert "links_to_known_brands_only" in {s["name"] for s in analyze_signals(text, trusted=["example.org"])[1]}
+
+
+def test_trusted_domain_is_never_its_own_lookalike():
+    text = "see https://www.paypal-team.com/x"
+    assert any(s["name"].startswith("brand_lookalike") for s in analyze_signals(text)[1])
+    assert not any(s["name"].startswith("brand_lookalike") for s in analyze_signals(text, trusted=["paypal-team.com"])[1])

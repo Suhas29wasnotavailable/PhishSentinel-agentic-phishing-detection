@@ -73,3 +73,10 @@ def test_ledger_names_the_mitre_techniques(tmp_path, capsys):
 def test_missing_file_has_its_own_exit_code(tmp_path, capsys):
     assert main([str(tmp_path / "missing.eml"), "--fail-above", "0.5"]) == 3
     assert "no such file" in capsys.readouterr().err
+
+
+def test_trust_flag(tmp_path, capsys):
+    f = tmp_path / "mail.txt"
+    f.write_text("see https://intranet.example.org/hr")
+    out = run(capsys, [str(f), "--trust", "example.org", "--json"])[1]
+    assert "links_to_known_brands_only" in out
