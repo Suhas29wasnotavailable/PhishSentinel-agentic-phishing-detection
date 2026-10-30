@@ -151,3 +151,8 @@ def test_deeply_nested_subdomain_is_flagged():
     assert "deep_subdomain" in names("http://account.secure.verify.login.example-host.xyz/x")
     assert "deep_subdomain" not in names("https://mail.google.com/x")
     assert "deep_subdomain" not in names("http://192.0.2.10/x")
+
+
+def test_qr_code_instructions_are_flagged():
+    assert "qr_code_lure" in names("To keep access, scan the QR code below with your phone.")
+    assert "qr_code_lure" not in names("Our booth will have a QR code poster.")
