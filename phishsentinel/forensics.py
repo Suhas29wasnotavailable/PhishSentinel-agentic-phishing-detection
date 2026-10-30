@@ -109,6 +109,9 @@ def url_intel(e):
         host, sp = u["host"], [u["span"]]
         if re.fullmatch(r"\d{1,3}(\.\d{1,3}){3}", host):
             out.append(sig("U-ip", "URL", "raw_ip_link", 2.0, u["url"], "T1566.002", sp, "url"))
+        sub_labels = len(host.split(".")) - len(u["domain"].split("."))
+        if sub_labels >= 4 and u["domain"] not in LEGIT_DOMAINS:
+            out.append(sig("U-deep", "URL", "deep_subdomain", 0.6, f"{sub_labels} subdomain levels in {host}", "T1583.001", sp, "url"))
         if u["domain"] in SHORTENERS:
             out.append(sig("U-short", "URL", "url_shortener", 0.8, u["url"], "T1566.002", sp, "url"))
         if host.split(".")[-1] in RISKY_TLDS:

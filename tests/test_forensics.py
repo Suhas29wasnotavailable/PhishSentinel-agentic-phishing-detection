@@ -145,3 +145,9 @@ def test_punycode_homoglyph_domain_is_matched_to_the_brand():
 def test_non_standard_port_is_flagged():
     assert "non_standard_port" in names("log in at http://portal.example.org:8443/login")
     assert "non_standard_port" not in names("log in at https://portal.example.org:443/login")
+
+
+def test_deeply_nested_subdomain_is_flagged():
+    assert "deep_subdomain" in names("http://account.secure.verify.login.example-host.xyz/x")
+    assert "deep_subdomain" not in names("https://mail.google.com/x")
+    assert "deep_subdomain" not in names("http://192.0.2.10/x")
