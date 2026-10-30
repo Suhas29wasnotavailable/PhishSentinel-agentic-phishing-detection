@@ -120,7 +120,14 @@ def url_intel(e):
             out.append(sig("U-look", "URL", f"brand_lookalike_{la[1]}", 2.2, f"{host} imitates {la[0]}", "T1583.001", sp, "url"))
         if "@" in u["url"].split("//")[-1].split("/")[0]:
             out.append(sig("U-at", "URL", "at_symbol_in_url", 1.5, u["url"], "T1566.002", sp, "url"))
-        q = parse_qs(urlparse(u["url"] if u["url"].startswith("http") else "http://" + u["url"]).query)
+        parsed = urlparse(u["url"] if u["url"].lower().startswith("http") else "http://" + u["url"])
+        try:
+            port = parsed.port
+        except ValueError:
+            port = None
+        if port and port not in (80, 443):
+            out.append(sig("U-port", "URL", "non_standard_port", 0.6, f"port {port} in {u['url']}", "T1566.002", sp, "url"))
+        q = parse_qs(parsed.query)
         if "redirect_uri" in q and "scope" in q:
             redir = registered_domain(urlparse(q["redirect_uri"][0]).hostname or "")
             if redir not in LEGIT_DOMAINS:
