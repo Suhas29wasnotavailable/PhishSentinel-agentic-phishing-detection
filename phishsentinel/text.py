@@ -55,7 +55,7 @@ def extract_urls(norm_text):
         for m in rx.finditer(norm_text):
             if any(a <= m.start() < b for a, b in seen):
                 continue
-            url = re.sub(r"\s+", "", m.group(0)).rstrip(".,;")
+            url = re.sub(r"\s+", "", m.group(0)).rstrip(".,;:!?")
             full = url if url.lower().startswith("http") else "http://" + url
             host = (urlparse(full).hostname or "").lower()
             if "." not in host:
