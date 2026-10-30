@@ -140,3 +140,8 @@ def test_punycode_homoglyph_domain_is_matched_to_the_brand():
     assert brand_lookalike("xn--pypal-4ve.com") == ("paypal", "typosquat")
     found = names("sign in at https://xn--pypal-4ve.com/login")
     assert {"punycode_domain", "brand_lookalike_typosquat"} <= found
+
+
+def test_non_standard_port_is_flagged():
+    assert "non_standard_port" in names("log in at http://portal.example.org:8443/login")
+    assert "non_standard_port" not in names("log in at https://portal.example.org:443/login")
