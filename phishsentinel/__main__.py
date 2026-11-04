@@ -5,6 +5,7 @@ import os
 import sys
 from pathlib import Path
 
+from . import __version__
 from .forensics import analyze_signals, rule_logodds, sigmoid
 from .iocs import extract_iocs
 from .markdown import triage_markdown
@@ -65,6 +66,7 @@ def main(argv=None):
     ap.add_argument("--fail-above", type=float, metavar="RISK",
                     help="exit with code 2 if the rule-engine risk is at or above RISK (0-1), for mail-filter hooks")
     ap.add_argument("--iocs", action="store_true", help="print defanged indicators (URLs, domains, IPs, senders, attachment hashes) instead")
+    ap.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     ap.add_argument("--markdown", action="store_true", help="print a Markdown triage note (signals, ATT&CK links, defanged IOCs)")
     ap.add_argument("--trust", action="append", default=[], metavar="DOMAIN",
                     help="treat DOMAIN (e.g. your organisation's) as a known-good link domain; repeatable")
