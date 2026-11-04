@@ -105,3 +105,12 @@ def test_folders_are_expanded_to_their_mail_files(tmp_path, capsys):
 def test_empty_folder_is_an_error_not_a_stdin_read(tmp_path, capsys):
     assert main([str(tmp_path)]) == 3
     assert "no mail files" in capsys.readouterr().err
+
+
+def test_version_flag(capsys):
+    import pytest
+    from phishsentinel import __version__
+    with pytest.raises(SystemExit):
+        main(["--version"])
+    assert capsys.readouterr().out.strip() == f"phishsentinel {__version__}"
+    assert __version__.count(".") >= 2 or __version__ == "0+unknown"
