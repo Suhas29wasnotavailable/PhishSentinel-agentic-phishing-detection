@@ -114,3 +114,9 @@ def test_version_flag(capsys):
         main(["--version"])
     assert capsys.readouterr().out.strip() == f"phishsentinel {__version__}"
     assert __version__.count(".") >= 2 or __version__ == "0+unknown"
+
+
+def test_markdown_note_without_signals(tmp_path, capsys):
+    f = tmp_path / "plain.txt"
+    f.write_text("lunch at noon?")
+    assert "_No deterministic signals._" in run(capsys, [str(f), "--markdown"])[1]

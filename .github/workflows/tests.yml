@@ -19,4 +19,4 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - run: pip install -e . -r requirements-dev.txt
       - run: pyflakes phishsentinel tests
-      - run: pytest -q --cov=phishsentinel --cov-report=term-missing --cov-fail-under=85
+      - run: pytest -q --cov=phishsentinel --cov-report=term-missing --cov-fail-under=95

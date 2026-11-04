@@ -198,3 +198,13 @@ def test_attachment_lure_wording():
     assert "attachment_lure" in names("Please open the attached invoice before Friday.")
     assert "attachment_lure" in names("Remittance attached for your records.")
     assert "attachment_lure" not in names("I attached a photo of the team lunch.")
+
+
+def test_brand_display_name_from_another_domain_is_spoofing():
+    assert "display_name_spoof" in names("From: PayPal Service <service@example-notify.net>\nTo: b@example.org\nSubject: Hi\n\nHello.")
+    assert "display_name_spoof" not in names("From: PayPal <service@paypal.com>\nTo: b@example.org\nSubject: Hi\n\nHello.")
+
+
+def test_malformed_punycode_and_port_do_not_crash():
+    assert brand_lookalike("xn--a-.example") is None
+    assert "non_standard_port" not in names("see http://example.org:99999/x")
