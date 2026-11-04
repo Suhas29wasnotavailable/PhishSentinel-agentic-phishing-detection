@@ -166,6 +166,7 @@ CONTENT_RULES = [  # (id, name, log-odds weight, MITRE, patterns)
     ("C-sec", "secrecy", 0.6, "T1656", [r"\b(keep (this|it) (between us|private|secret)|discreet(ly)?|do not (tell|share|disclose) (this|anyone))\b"]),
     ("C-gen", "generic_greeting", 0.3, "T1566", [r"\b(dear (customer|user|friend|sir|madam|valued|member|beneficiary|account holder))\b"]),
     ("C-bulk", "bulk_mail_footer", 0.4, "T1566", [r"\b(unsubscribe|remove me|opt[- ]?out|to be removed)\b"]),
+    ("C-att", "attachment_lure", 0.4, "T1566.001", [r"\b((open|see|review|download|view) the attached (invoice|document|file|statement|remittance|payment|order|receipt)|(invoice|remittance|payment advice|purchase order|statement) (is )?attached)\b"]),
     ("C-qr", "qr_code_lure", 0.9, "T1566", [r"\b(scan (the|this|below|attached) (qr|qr-?code|code)|qr[- ]?code (below|attached)|use your (phone|mobile) camera to scan)\b"]),
     ("C-thread", "reply_thread_context", -0.7, None, [r"(-{3,}\s*original message|forwarded by|\bre\s*:\s|\bfw\s*:\s|wrote\s*:)"]),
 ]

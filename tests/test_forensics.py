@@ -192,3 +192,9 @@ def test_email_address_in_display_name_must_match_the_sender():
     assert "address_in_display_name" in names(spoof)
     honest = 'From: "billing@example.com" <billing@example.com>\nTo: b@example.org\nSubject: Hi\n\nHello.'
     assert "address_in_display_name" not in names(honest)
+
+
+def test_attachment_lure_wording():
+    assert "attachment_lure" in names("Please open the attached invoice before Friday.")
+    assert "attachment_lure" in names("Remittance attached for your records.")
+    assert "attachment_lure" not in names("I attached a photo of the team lunch.")
