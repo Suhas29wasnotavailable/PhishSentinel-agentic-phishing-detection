@@ -1,0 +1,7 @@
+From: Account Team <notice@example-mailer.net>
+To: user@example.org
+Subject: Account notice
+Authentication-Results: mx.example.org; spf=fail; dkim=none; dmarc=fail
+Content-Type: text/html; charset=utf-8
+
+<p>Dear customer, verify your account at <a href="http://203.0.113.7:8080/session">www.paypal.com</a>.</p>

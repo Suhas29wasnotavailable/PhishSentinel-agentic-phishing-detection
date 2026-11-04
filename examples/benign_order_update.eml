@@ -1,0 +1,7 @@
+From: Amazon <shipment-tracking@amazon.com>
+To: user@example.org
+Subject: Your order has shipped
+Message-ID: <0001@amazon.com>
+Authentication-Results: mx.example.org; spf=pass; dkim=pass; dmarc=pass
+
+Your package is on its way. Track it at https://www.amazon.com/orders

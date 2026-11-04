@@ -32,6 +32,7 @@ flowchart TD
 | `PhishSentinel_Agentic_Phishing_Detection.ipynb` | The full system: dataset, ML, RAG, LLM agents, LangGraph workflow, evaluation |
 | `phishsentinel/` | Importable deterministic core: parser, Unicode normalisation, forensic signals, CLI |
 | `tests/` | Unit tests for the core (run in GitHub Actions) |
+| `examples/` | Hand-written sample emails with expected verdicts (also regression tests) |
 | `docs/figures/` | Evaluation figures exported from the notebook |
 
 ## Command-line evidence ledger
