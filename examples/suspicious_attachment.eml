@@ -1,0 +1,16 @@
+From: Scanner <scanner@example-devices.net>
+To: user@example.org
+Subject: Scanned document
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary=XX
+
+--XX
+Content-Type: text/plain
+
+Your scanned document is attached.
+--XX
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="scan_0042.pdf.exe"
+
+AAAA
+--XX--
