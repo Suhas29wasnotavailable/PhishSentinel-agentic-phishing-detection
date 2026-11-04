@@ -40,9 +40,11 @@ The deterministic core has no dependencies:
 ```bash
 pip install .
 phishsentinel suspicious_email.eml          # or: cat email.txt | phishsentinel --json
-phishsentinel inbox/*.eml                   # riskiest-first summary, one line per email
+phishsentinel examples/                     # a folder: riskiest-first summary, one line per email
 phishsentinel mail.eml --fail-above 0.8     # exit code 2 at or above the risk threshold
 phishsentinel mail.eml --iocs               # defanged URLs, domains, IPs, senders and attachment hashes
+phishsentinel mail.eml --markdown           # triage note to paste into a ticket
+phishsentinel mail.eml --trust example.org  # treat your own domain as known-good
 ```
 ```
 Rule-engine risk: 0.83  (log-odds +2.6)  ·  headers: no  ·  URLs: 1
@@ -51,7 +53,7 @@ Rule-engine risk: 0.83  (log-odds +2.6)  ·  headers: no  ·  URLs: 1
 MITRE ATT&CK: T1204.001 User Execution: Malicious Link; T1566.002 Phishing: Spearphishing Link
 ```
 
-Signals from the deterministic core include SPF/DKIM/DMARC failures, Reply-To and Return-Path mismatches, display-name and sender-domain brand look-alikes, risky attachments, raw-IP, punycode (decoded and matched against brands), shortener and OAuth-consent links, HTML links whose visible text shows a different domain, password forms embedded in the email, social-engineering phrases and Unicode obfuscation. Each one is mapped to a MITRE ATT&CK technique.
+Signals from the deterministic core include SPF/DKIM/DMARC failures, Reply-To and Return-Path mismatches, fake "RE:" replies, display-name and sender-domain brand look-alikes, addresses hidden in display names, risky attachments, raw-IP, punycode (decoded and matched against brands), shortener, non-standard-port, deeply nested and OAuth-consent links, HTML links whose visible text shows a different domain, password forms embedded in the email, social-engineering phrases, QR-code lures and Unicode obfuscation. Each one is mapped to a MITRE ATT&CK technique.
 
 ## Highlights
 - **Adaptive compute routing:** 96.9% of emails are settled without any LLM call, and only 3.1% reach the multi-agent debate.
