@@ -101,7 +101,8 @@ def parse_input(raw):
         headers = {"from_name": from_name, "from_addr": from_addr.lower(), "subject": str(msg.get("Subject", "")),
                    "reply_to": parseaddr(str(msg.get("Reply-To", "") or ""))[1].lower(),
                    "return_path": parseaddr(str(msg.get("Return-Path", "") or ""))[1].lower(),
-                   "spf": res("spf"), "dkim": res("dkim"), "dmarc": res("dmarc"), "has_auth_header": bool(auth)}
+                   "spf": res("spf"), "dkim": res("dkim"), "dmarc": res("dmarc"), "has_auth_header": bool(auth),
+                   "threaded": bool(msg.get("In-Reply-To") or msg.get("References"))}
         texts, htmls = [], []
         for part in msg.walk():
             if part.is_multipart():

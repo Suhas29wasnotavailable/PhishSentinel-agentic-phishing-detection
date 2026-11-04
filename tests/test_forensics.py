@@ -168,3 +168,15 @@ def test_trusted_domain_is_never_its_own_lookalike():
     text = "see https://www.paypal-team.com/x"
     assert any(s["name"].startswith("brand_lookalike") for s in analyze_signals(text)[1])
     assert not any(s["name"].startswith("brand_lookalike") for s in analyze_signals(text, trusted=["paypal-team.com"])[1])
+
+
+def reply(extra=""):
+    return f"From: A Colleague <a@example.com>\nTo: b@example.org\nSubject: RE: invoice 4471\n{extra}\nSee below."
+
+
+def test_reply_subject_without_thread_headers_is_flagged():
+    assert "fake_reply_subject" in names(reply())
+
+
+def test_genuine_reply_is_not_flagged():
+    assert "fake_reply_subject" not in names(reply("In-Reply-To: <abc@example.org>\n"))
