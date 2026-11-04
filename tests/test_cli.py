@@ -80,3 +80,14 @@ def test_trust_flag(tmp_path, capsys):
     f.write_text("see https://intranet.example.org/hr")
     out = run(capsys, [str(f), "--trust", "example.org", "--json"])[1]
     assert "links_to_known_brands_only" in out
+
+
+def test_markdown_triage_note(tmp_path, capsys):
+    f = tmp_path / "mail.txt"
+    f.write_text("Please click here: http://192.0.2.10/page")
+    out = run(capsys, [str(f), "--markdown"])[1]
+    assert out.startswith("## Triage: ")
+    assert "| +2.0 | URL | `raw_ip_link` |" in out
+    assert "(https://attack.mitre.org/techniques/T1566/002/)" in out
+    assert "- urls: `hxxp://192[.]0[.]2[.]10/page`" in out
+    assert "http://192" not in out

@@ -6,6 +6,7 @@ import sys
 
 from .forensics import analyze_signals, rule_logodds, sigmoid
 from .iocs import extract_iocs
+from .markdown import triage_markdown
 from .mitre import technique_name
 
 
@@ -29,7 +30,9 @@ def batch(paths, args):
             rows.append((path, *report(f.read(), args.trust)))
     rows.sort(key=lambda r: -r[4])
     for path, email, signals, lo, risk in rows:
-        if args.json:
+        if args.markdown:
+            print(triage_markdown(email, signals, lo, risk, title=f"Triage: {path}"))
+        elif args.json:
             print(json.dumps(as_json(email, signals, lo, risk, file=path)))
         else:
             top = max(signals, key=lambda s: s["weight"])["name"] if signals else "-"
@@ -47,6 +50,7 @@ def main(argv=None):
     ap.add_argument("--fail-above", type=float, metavar="RISK",
                     help="exit with code 2 if the rule-engine risk is at or above RISK (0-1), for mail-filter hooks")
     ap.add_argument("--iocs", action="store_true", help="print defanged indicators (URLs, domains, IPs, senders, attachment hashes) instead")
+    ap.add_argument("--markdown", action="store_true", help="print a Markdown triage note (signals, ATT&CK links, defanged IOCs)")
     ap.add_argument("--trust", action="append", default=[], metavar="DOMAIN",
                     help="treat DOMAIN (e.g. your organisation's) as a known-good link domain; repeatable")
     args = ap.parse_args(argv)
@@ -61,6 +65,9 @@ def main(argv=None):
     email, signals, lo, risk = report(raw, args.trust)
     flagged = args.fail_above is not None and risk >= args.fail_above
 
+    if args.markdown:
+        print(triage_markdown(email, signals, lo, risk, title=f"Triage: {args.files[0]}" if args.files else "Email triage"), end="")
+        return 2 if flagged else 0
     if args.iocs:
         iocs = extract_iocs(email)
         if args.json:
