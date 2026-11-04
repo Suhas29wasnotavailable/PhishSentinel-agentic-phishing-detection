@@ -77,6 +77,10 @@ def header_forensics(e):
         out.append(sig("H-reply", "Header", "reply_to_mismatch", 1.4, f"Reply-To {h['reply_to']} ≠ From domain {fdom}", "T1656"))
     if h["return_path"] and registered_domain(h["return_path"].split("@")[-1]) != registered_domain(fdom):
         out.append(sig("H-rpath", "Header", "return_path_mismatch", 0.5, f"Return-Path {h['return_path']}"))
+    shown = re.search(r"[\w.+-]+@([\w-]+(?:\.[\w-]+)+)", h["from_name"])
+    if shown and registered_domain(shown.group(1)) != registered_domain(fdom):
+        out.append(sig("H-nameaddr", "Header", "address_in_display_name", 1.8,
+                       f"display name shows {shown.group(0)} but the message is from {h['from_addr']}", "T1656"))
     if re.match(r"(?i)\s*(re|fwd?)\s*:", h["subject"]) and not h.get("threaded", True):
         out.append(sig("H-fakere", "Header", "fake_reply_subject", 1.0,
                        f"subject '{h['subject'][:60]}' looks like a reply but has no In-Reply-To/References", "T1656"))

@@ -185,3 +185,10 @@ def test_genuine_reply_is_not_flagged():
 def test_fake_reply_subject_earns_no_thread_credit():
     assert "reply_thread_context" not in names(reply())
     assert "reply_thread_context" in names(reply("In-Reply-To: <abc@example.org>\n"))
+
+
+def test_email_address_in_display_name_must_match_the_sender():
+    spoof = 'From: "billing@example.com" <notices@example-mailer.net>\nTo: b@example.org\nSubject: Hi\n\nHello.'
+    assert "address_in_display_name" in names(spoof)
+    honest = 'From: "billing@example.com" <billing@example.com>\nTo: b@example.org\nSubject: Hi\n\nHello.'
+    assert "address_in_display_name" not in names(honest)
