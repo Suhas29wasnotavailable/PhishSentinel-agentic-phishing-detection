@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.0 – 2026-11-05
+### Added
+- `--markdown`: ticket-ready triage note with an ATT&CK-linked signal table and defanged indicators.
+- `--trust DOMAIN` / `analyze_signals(raw, trusted=...)`: treat your organisation's domains as known-good.
+- Folders on the command line are scanned recursively for `.eml`, `.txt`, `.msg` and `.mbox` files.
+- Signals: `fake_reply_subject`, `address_in_display_name`, `non_standard_port`, `deep_subdomain`, `qr_code_lure`.
+- `examples/`: five sample emails with expected verdicts, used as regression tests.
+
+### Fixed
+- Trailing `!`, `?` and `:` are no longer kept as part of a URL.
+- A fake "RE:" subject no longer earns the reply-thread credit.
+
 ## 0.3.0 – 2026-10-30
 ### Added
 - `--iocs`: defanged indicators of compromise (URLs, domains, IPs, sender addresses, attachment SHA-256), also as JSON.
