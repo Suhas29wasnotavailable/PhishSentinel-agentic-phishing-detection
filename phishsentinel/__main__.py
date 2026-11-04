@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 import sys
+from pathlib import Path
 
 from .forensics import analyze_signals, rule_logodds, sigmoid
 from .iocs import extract_iocs
@@ -41,11 +42,25 @@ def batch(paths, args):
     return 2 if flagged else 0
 
 
+MAIL_SUFFIXES = {".eml", ".txt", ".msg", ".mbox"}
+
+
+def expand(paths):
+    """Replace each directory with the mail files under it (*.eml, *.txt, ...), sorted."""
+    out = []
+    for p in paths:
+        if os.path.isdir(p):
+            out += sorted(str(f) for f in Path(p).rglob("*") if f.is_file() and f.suffix.lower() in MAIL_SUFFIXES)
+        else:
+            out.append(p)
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="phishsentinel", description="Deterministic phishing evidence ledger for emails.",
                                  epilog="exit codes: 0 ok, 2 risk at or above --fail-above (or bad arguments), 3 file not found")
     ap.add_argument("files", nargs="*", metavar="FILE",
-                    help="email file(s), plain text or raw MIME; reads stdin if omitted. Several files give a ranked summary")
+                    help="email file(s) or folders of them, plain text or raw MIME; reads stdin if omitted. Several files give a ranked summary")
     ap.add_argument("--json", action="store_true", help="print signals as JSON (JSON lines for several files)")
     ap.add_argument("--fail-above", type=float, metavar="RISK",
                     help="exit with code 2 if the rule-engine risk is at or above RISK (0-1), for mail-filter hooks")
@@ -54,6 +69,10 @@ def main(argv=None):
     ap.add_argument("--trust", action="append", default=[], metavar="DOMAIN",
                     help="treat DOMAIN (e.g. your organisation's) as a known-good link domain; repeatable")
     args = ap.parse_args(argv)
+    given, args.files = args.files, expand(args.files)
+    if given and not args.files:
+        print(f"{ap.prog}: no mail files ({', '.join(sorted(MAIL_SUFFIXES))}) in {', '.join(given)}", file=sys.stderr)
+        return 3
     missing = [f for f in args.files if not os.path.isfile(f)]
     if missing:
         print(f"{ap.prog}: no such file: {', '.join(missing)}", file=sys.stderr)

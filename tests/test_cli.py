@@ -91,3 +91,17 @@ def test_markdown_triage_note(tmp_path, capsys):
     assert "(https://attack.mitre.org/techniques/T1566/002/)" in out
     assert "- urls: `hxxp://192[.]0[.]2[.]10/page`" in out
     assert "http://192" not in out
+
+
+def test_folders_are_expanded_to_their_mail_files(tmp_path, capsys):
+    (tmp_path / "inbox" / "sub").mkdir(parents=True)
+    (tmp_path / "inbox" / "a.eml").write_text("Please click here: http://192.0.2.10/page")
+    (tmp_path / "inbox" / "sub" / "b.txt").write_text("lunch at noon?")
+    (tmp_path / "inbox" / "notes.pdf").write_text("not mail")
+    out = run(capsys, [str(tmp_path / "inbox")])[1].splitlines()
+    assert [line.rsplit("/", 1)[-1] for line in out] == ["a.eml", "b.txt"]
+
+
+def test_empty_folder_is_an_error_not_a_stdin_read(tmp_path, capsys):
+    assert main([str(tmp_path)]) == 3
+    assert "no mail files" in capsys.readouterr().err
