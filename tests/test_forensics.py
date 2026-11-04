@@ -180,3 +180,8 @@ def test_reply_subject_without_thread_headers_is_flagged():
 
 def test_genuine_reply_is_not_flagged():
     assert "fake_reply_subject" not in names(reply("In-Reply-To: <abc@example.org>\n"))
+
+
+def test_fake_reply_subject_earns_no_thread_credit():
+    assert "reply_thread_context" not in names(reply())
+    assert "reply_thread_context" in names(reply("In-Reply-To: <abc@example.org>\n"))

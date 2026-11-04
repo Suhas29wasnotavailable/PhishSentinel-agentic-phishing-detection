@@ -168,8 +168,13 @@ CONTENT_RULES = [  # (id, name, log-odds weight, MITRE, patterns)
 
 def content_forensics(e):
     out, text = [], e["norm"]
+    h = e["headers"]
+    # a "RE:" subject on an unthreaded message is evidence for, not against, phishing (see fake_reply_subject)
+    subject_end = len(h["subject"]) if h and h["subject"] and not h.get("threaded", True) else 0
     for sid, name, w, mitre, pats in CONTENT_RULES:
         spans = [(m.start(), m.end()) for p in pats for m in re.finditer(p, text, flags=re.I)]
+        if sid == "C-thread":
+            spans = [(a, b) for a, b in spans if a >= subject_end]
         if spans:
             snippet = ", ".join(sorted({text[a:b].lower() for a, b in spans})[:4])
             out.append(sig(sid, "Content", name, w, f"“{snippet}”", mitre, spans[:12], name))
